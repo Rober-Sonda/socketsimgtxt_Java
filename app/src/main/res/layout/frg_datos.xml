@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/datos"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="top"
+    android:orientation="vertical"
+    android:alpha=".8"
+    android:background="@color/black"
+    android:backgroundTint="@color/black">
+
+    <ImageView
+        android:id="@+id/imageView2"
+        android:layout_width="410dp"
+        android:layout_height="108dp"
+        android:alpha=".7"
+        android:background="@color/black"
+        android:orientation="vertical"
+        android:scaleType="fitXY"
+        android:textAlignment="center"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/google_servidores_7" />
+
+    <TextView
+        android:id="@+id/tvw_Titulo_id"
+        android:layout_width="234dp"
+        android:layout_height="33dp"
+        android:layout_marginTop="4dp"
+        android:fontFamily="@font/advent_pro_thin"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:text="Cliente || Servidor"
+        android:textColor="@color/white"
+        android:textSize="25sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="MissingConstraints" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:gravity="bottom|center"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.2"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:ignore="MissingConstraints">
+
+        <Button
+            android:id="@+id/btnCliente"
+            android:layout_width="118dp"
+            android:layout_height="50dp"
+            android:layout_marginStart="68dp"
+            android:layout_marginBottom="10dp"
+            android:backgroundTint="#083BF1"
+            android:onClick="onClick"
+            android:text="Cliente"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <Button
+            android:id="@+id/btnServidor"
+            android:layout_width="118dp"
+            android:layout_height="50dp"
+            android:layout_marginBottom="10dp"
+            android:backgroundTint="#FF1C1C"
+            android:onClick="onClick"
+            android:text="Servidor"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.16"
+            app:layout_constraintStart_toEndOf="@+id/btnCliente" />
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
