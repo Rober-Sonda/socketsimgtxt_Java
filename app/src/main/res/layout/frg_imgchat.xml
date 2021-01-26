@@ -30,9 +30,10 @@
             android:id="@+id/txtv_subtitulo"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="top"
-            android:text="ELIJE UNA IMAGEN\n Texto desde fragmento frg_imgchat"
-            android:textAlignment="center" />
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:text="ELIJE UNA IMAGEN" />
+
     </LinearLayout>
 
     <LinearLayout
@@ -47,14 +48,15 @@
         app:layout_constraintStart_toStartOf="parent"
         tools:ignore="MissingConstraints">
         <Button
-            android:id="@+id/btnSendImg"
+            android:id="@+id/btnGallery"
             android:layout_width="wrap_content"
             android:layout_height="44dp"
             android:gravity="center"
-            android:layout_margin="20dp"
-            android:backgroundTint="@color/purple_700"
-            android:onClick="onClick"
+            android:layout_margin="5dp"
+            android:textSize="12dp"
+            android:backgroundTint="#005098"
             android:text="SELECCIONAR IMAGEN"
+            android:onClick="ClickBtnGaleria"
             tools:ignore="OnClick" />
 
         <Button
@@ -62,11 +64,26 @@
             android:layout_width="wrap_content"
             android:layout_height="44dp"
             android:gravity="center"
-            android:layout_margin="20dp"
+            android:textSize="12dp"
+            android:layout_margin="5dp"
             android:layout_gravity="center"
-            android:backgroundTint="@color/purple_700"
+            android:backgroundTint="#9E2927"
             android:onClick="onClick"
-            android:text="BORRAR"
+            android:text="LIMPIAR"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/btnSendTxt"
+            tools:ignore="OnClick" />
+        <Button
+            android:id="@+id/btnSendImg"
+            android:layout_width="wrap_content"
+            android:layout_height="44dp"
+            android:gravity="center"
+            android:textSize="12dp"
+            android:layout_margin="5dp"
+            android:layout_gravity="center"
+            android:backgroundTint="#306838"
+            android:onClick="EnviarImagen"
+            android:text="ENVIAR"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toEndOf="@+id/btnSendTxt"
             tools:ignore="OnClick" />

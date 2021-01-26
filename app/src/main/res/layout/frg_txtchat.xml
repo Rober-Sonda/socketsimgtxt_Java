@@ -67,7 +67,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="12dp"
-        android:text="ENVIA UN TEXTO\n Texto desde fragmento frg_txtChat"
+        android:text="ENVIA UN TEXTO"
         android:textAlignment="center"
         app:layout_constraintBottom_toTopOf="@+id/btnlimpiartxv_id"
         app:layout_constraintEnd_toEndOf="parent"

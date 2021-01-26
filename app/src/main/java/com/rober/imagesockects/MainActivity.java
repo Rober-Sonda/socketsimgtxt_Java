@@ -12,7 +12,6 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.telephony.SmsManager;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Gravity;
@@ -33,25 +32,32 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import static com.rober.imagesockects.GlobalInfo.IPAddress;
+import static com.rober.imagesockects.GlobalInfo.IPServidor;
 import static com.rober.imagesockects.GlobalInfo.PORT;
 
 public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_PERMISSION_CODE = 1777;
     private static final int REQUEST_IMAGE_GALLERY = 2777;
+    private View datos;
+    ImageView Marco;
+    TextView titulo, txtfecha;
+    Button btnCliente, btnServidor, btnGallery, btnLimpiarChattxv, btnSendTxt, btnSenImg;
 //    Socket SocketCliente = new Socket(IPServidor, PORT);
 //    Cliente cliente = new Cliente(SocketCliente);
+
 
     public MainActivity() throws IOException {
 
     }
-
-    private View datos;
-    ImageView Marco;
-    TextView titulo;
-    Button btnCliente, btnServidor, btnGallery, btnLimpiarChattxv;
 
     @SuppressLint("ResourceType")
     @Override
@@ -60,8 +66,11 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         btnCliente = findViewById(R.id.btnCliente);
         btnServidor = findViewById(R.id.btnServidor);
+        txtfecha = findViewById(R.id.txv_fecha_id);
 
-
+        String strDateFormat = "dd/MM/yyyy"; // Especifico el formato de la fecha
+        SimpleDateFormat objSDF = new SimpleDateFormat(strDateFormat); // La cadena de formato de fecha se pasa como un argumento al objeto
+        txtfecha.setText(GlobalInfo.fechaActual()); // El formato de fecha se aplica a la fecha actual
         btnServidor.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -79,6 +88,7 @@ public class MainActivity extends AppCompatActivity {
                 new Thread(new Runnable() {
                     String msj = "";
                     LinearLayout linearLayout = findViewById(R.id.chat_id);
+
                     @Override
                     public void run() {
                         Servidor servidor = new Servidor(IPAddress, PORT, MainActivity.this);
@@ -124,7 +134,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public View onCreateView(@Nullable View parent, @NonNull String name, @NonNull Context context, @NonNull AttributeSet attrs) {
         return super.onCreateView(parent, name, context, attrs);
-
     }
 
     private void abrirGaleria() {
@@ -143,6 +152,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.i("TAG", "Result" + resultCode);
                 Uri imagen = data.getData();
                 System.out.println(imagen);
+                GlobalInfo.URL_IMAGEN = imagen;
                 if (Marco != null) {
                     Marco.setImageURI(imagen);
                 } else {
@@ -186,10 +196,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.mnimg_id) {
+            GlobalInfo.queEnvio = 2; //Bandera para saber que envio una imagen
             cargarBlankFrag(R.id.frg_Content);
             cargarimgChatFrag(R.id.frg_Content);
         } else if (item.getItemId() == R.id.mnmsj_id) {
-//            borrarfrag(R.id.frg_Content);
+            GlobalInfo.queEnvio = 1; //Bandera para saber que envio una imagen
             cargarBlankFrag(R.id.frg_Content);
             cargartxtChatFrag(R.id.frg_Content);
         } else if (item.getItemId() == R.id.mnsalir_id) {
@@ -249,6 +260,7 @@ public class MainActivity extends AppCompatActivity {
         builder.setPositiveButton("TEXTO", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                GlobalInfo.queEnvio = 1;
                 cargarBlankFrag(R.id.frg_Content);
                 cargartxtChatFrag(R.id.frg_Content);
                 dialog.dismiss();
@@ -256,6 +268,7 @@ public class MainActivity extends AppCompatActivity {
         }).setNegativeButton("IMAGENES", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
+                GlobalInfo.queEnvio = 2;
                 cargarBlankFrag(R.id.frg_Content);
                 cargarimgChatFrag(R.id.frg_Content);
                 dialog.dismiss();
@@ -307,24 +320,24 @@ public class MainActivity extends AppCompatActivity {
                     }).start();
                 });
                 break;
-            case R.id.btnSendImg:
-                Marco = findViewById(R.id.imgchatid2);
-                btnGallery = findViewById(R.id.btnSendTxt);
-                btnGallery.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        // tu acción
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) { //pido los permisos en tiempo de ejecucion
-                            if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) { //aca sabemos si los permisos estan habilitados o no
-                                abrirGaleria();
-                            } else {
-                                ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_PERMISSION_CODE);
-                            }
-                        } else {
-                            abrirGaleria(); //abrimos la galeria porque damos por sentado que los permisos ya fueron otorgados
-                        }
-                    }
-                });
+//            case R.id.btnGallery:
+//                Marco = findViewById(R.id.imgchatid2);
+//                btnGallery = findViewById(R.id.btnSendTxt);
+//                btnGallery.setOnClickListener(new View.OnClickListener() {
+//                    @Override
+//                    public void onClick(View v) {
+//                        // tu acción
+//                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) { //pido los permisos en tiempo de ejecucion
+//                            if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) { //aca sabemos si los permisos estan habilitados o no
+//                                abrirGaleria();
+//                            } else {
+//                                ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_PERMISSION_CODE);
+//                            }
+//                        } else {
+//                            abrirGaleria(); //abrimos la galeria porque damos por sentado que los permisos ya fueron otorgados
+//                        }
+//                    }
+//                });
             default:
                 GlobalInfo.Rol = 2;
                 break;
@@ -332,10 +345,71 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        android.os.Process.killProcess(android.os.Process.myPid());
+    public void ClickBtnGaleria(View view) {
+        Marco = findViewById(R.id.imgchatid2);
+        btnGallery = findViewById(R.id.btnGallery);
+        btnGallery.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // tu acción
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) { //pido los permisos en tiempo de ejecucion
+                    if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) { //aca sabemos si los permisos estan habilitados o no
+                        abrirGaleria();
+                    } else {
+                        ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_PERMISSION_CODE);
+                    }
+                } else {
+                    abrirGaleria(); //abrimos la galeria porque damos por sentado que los permisos ya fueron otorgados
+                }
+            }
+        });
     }
 
+    public void EnviarImagen(View view) throws IOException {
+        GlobalInfo.queEnvio = 2;
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ImageView imageView = findViewById(R.id.imageView2);
+                //mando lo escrito a la clase
+                Cliente cliente = null;
+                try {
+                    new Thread(new Cliente(MainActivity.this, GlobalInfo.URL_IMAGEN)).start();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    Toast.makeText(MainActivity.this, "Dibujar la imagen en el imageview", Toast.LENGTH_SHORT).show();
+                }
+
+
+                //luego de salir y enviar los datos al servidor modifico la vista
+
+            }
+        });
+    }
 }
+
+                //if (GlobalInfo.URL_IMAGEN != null) {
+                //Uri URL_FUENTE_GALLERY = GlobalInfo.URL_IMAGEN;
+                ////            InputStream url_img = new BufferedInputStream(new FileInputStream(String.valueOf(URL_FUENTE_GALLERY)));
+                //InputStream url_img = getContentResolver().openInputStream(URL_FUENTE_GALLERY);
+                ////BufferedOutputStream fuente = new BufferedOutputStream(_SocketCliente.getOutputStream());
+                ////            InputStream url_img2 = new BufferedInputStream(new FileInputStream(URL_FUENTE_GALLERY.getPath()));
+                //int charsRead = 0;
+                //int i = url_img.read();
+                //
+                //byte[] buffer = new byte[5*1024*1024];
+                //
+                //
+                //while ((charsRead = url_img.read(buffer)) != -1) {
+                ////buffer2 += buffer.substring(0, charsRead);
+                //System.out.println(""+ charsRead);
+                //System.out.println(String.valueOf(buffer.length));
+                //Log.i("Cliente ", "enviando una imagen");
+                //}
+                //
+                //if (url_img != null) {
+                //url_img.close();
+                //}
+                //} else {
+                //System.out.println("Elije una imagen de la galeria");
+                //}
