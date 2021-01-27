@@ -1,11 +1,8 @@
-package com.rober.imagesockects;
+package com.rober.DAutosockets;
 
+import android.app.role.RoleManager;
 import android.net.Uri;
 import android.util.Log;
-
-import androidx.appcompat.app.AlertDialog;
-
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.net.Inet4Address;
 import java.net.InetAddress;
@@ -53,4 +50,6 @@ public class GlobalInfo {
                 Today = objSDF.format(objDate);
                 return Today;
         }
+
+
 }

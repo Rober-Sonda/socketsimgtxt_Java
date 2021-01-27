@@ -1,9 +1,11 @@
-package com.rober.imagesockects;
+package com.rober.DAutosockets;
 
+import android.app.Fragment;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.util.Log;
 import android.view.Gravity;
 import android.widget.EditText;
@@ -17,13 +19,9 @@ import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketException;
-import java.nio.Buffer;
-import java.time.chrono.MinguoChronology;
 
 public class Servidor implements Runnable {
     private ServerSocket _Server;
@@ -38,31 +36,64 @@ public class Servidor implements Runnable {
     MainActivity _main;
     private String mensajeRecibido;
     DataInputStream fuente;
-    public Servidor(String IPAddress, int PORT, MainActivity main){
+    DataOutputStream out;
+    private byte[] typeFile = new byte[1];
+    private int charsRead;
+
+
+
+    private byte tipoDato; // 1:TEXTO 2:IMAGEN
+    public Servidor(String IPAddress, int PORT, MainActivity main) {
         _PORT = PORT;
         _IPAddress = IPAddress;
-//        _editText = editText;
         _main = main;
         _Chat = _main.findViewById(R.id.chat_id);
+        charsRead = 0;
     }
+
     @Override
     public void run() {
         try {
             _Server = new ServerSocket(_PORT);
 
-            while ( true ) {
+            while (true) {
                 try {
-
                     esperarConexion();
-//                    System.out.println( "Conexion aceptada\n" );
-                    System.out.println( "\nSe recibieron los flujos de entrada\n" );
-                    if (GlobalInfo.queEnvio == 1) {
+                    System.out.println("\nSe recibieron los flujos de entrada\n");
+                    int indicador = 0;
+                    fuente = new DataInputStream(_Client.getInputStream());
+                    do {
+                        indicador = fuente.read(typeFile);
+                    } while (indicador == 0);
+                    out = new DataOutputStream(_Client.getOutputStream());   //Canal de salida para texto e imagen
+                    if (typeFile[0] == 1) {   ///////////////////////////////////////////
                         //SI ES UN TEXTO MUESTRO UN TEXTO
-                        mostrarInfoTxtenPantalla(); // del lado del servidor
-                    }else if(GlobalInfo.queEnvio == 2){
-                        //SINO MUESTRO LA IMAGEN ENVIADA POR EL CLIENTE
-                        mostrarInfoImgenPantalla(); // del lado del servidor
-                    }else {
+                        byte[] buffer = new byte[2048];
+                        byte[] buffer2 = new byte[5 * 1024 * 1024];
+                        int punteroPpal = 0;
+//                        fuente = new DataInputStream(_Client.getInputStream());
+                        while ((charsRead = fuente.read(buffer)) != -1) {
+                            for (int n = 0; n < charsRead; n++) {
+                                buffer2[punteroPpal] = buffer[n]; //1024
+                                punteroPpal++;
+                            }
+                        }
+                        mostrarInfoTxtenPantalla(buffer2, punteroPpal); // del lado del servidor
+                    } else if (typeFile[0] == 2) {
+                        byte[] buffer = new byte[2048];
+                        byte[] buffer2 = new byte[5 * 1024 * 1024];
+                        int punteroPpal = 0;
+//                        fuente = new DataInputStream(_Client.getInputStream());
+                        while ((charsRead = fuente.read(buffer)) != -1) {
+                            for (int n = 0; n < charsRead; n++) {
+                                buffer2[punteroPpal] = buffer[n]; //1024
+                                punteroPpal++;
+                            }
+                        }
+                        //MUESTRO LA IMAGEN ENVIADA POR EL CLIENTE
+                        mostrarInfoImgenPantalla(buffer2, punteroPpal); // del lado del servidor
+                        //, new frg_txtChat(),R.id.frg_Content
+                    } else {
                         //queEnvio == 0
                         //Envie un mensaje sin formato
                         AlertDialog.Builder builder = new AlertDialog.Builder(_main);
@@ -75,7 +106,6 @@ public class Servidor implements Runnable {
                         });
                         builder.show();
                     }
-
                     //EL SERVIDOR SOLO ENVIARA MENSAJES DE RECIBIDO AL CLIENTE
                     //en formato texto
                 } catch (Exception ex) {
@@ -88,23 +118,17 @@ public class Servidor implements Runnable {
         } catch (IOException IOEx) {
             IOEx.printStackTrace();
         }
-
-
     }
 
-    public void mostrarInfoTxtenPantalla() throws IOException{
-        fuente = new DataInputStream(_Client.getInputStream());
+    public void mostrarInfoTxtenPantalla(byte[] buffer, int punteroPpal) throws IOException {
         String message = "";
-        int charsRead = 0;
-        byte[] buffer = new byte[1024];
-        while ((charsRead = fuente.read(buffer)) != -1) {
-            message += new String(buffer).substring(0, charsRead);
-        }
+        message += new String(buffer).substring(0, punteroPpal); //salteamos el dato de archivo
         setMensajeRecibido(message);
-        Log.i("Server QNTT",message + " soy el servidor");
+        Log.i("Server QNTT", message + " soy el servidor");
         if (fuente != null) {
             fuente.close();
         }
+        _main.cargartxtChatFrag(R.id.frg_Content);
         _main.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -121,60 +145,54 @@ public class Servidor implements Runnable {
     }
 
     // esperar que la conexión llegue, después mostrar información de la conexión
-
-    public void mostrarInfoImgenPantalla() throws IOException {
-//        InputStream fuente = new BufferedInputStream(new FileInputStream("C:/Users/Enzo/Downloads/fotografo-paisajes.jpg"));
-//        OutputStream destino =new FileOutputStream("file.jpg");
-            ImageView imageView = _main.findViewById(R.id.imgchatid2);
-            fuente = new DataInputStream(_Client.getInputStream());
-
-            int charsRead, i = 0;
-            byte[] buffer = new byte[1024];
-            byte[] buffer2 = new byte[5*1024*1024];
-        int punteroPpal = 0, punteroAux = 0;
-        while ((charsRead = fuente.read(buffer)) != -1) {
-
-            for (int n=0;n<buffer.length;n++) {
-                buffer2[punteroPpal] = buffer[n]; //1024
-                punteroPpal++;
+    public void mostrarInfoImgenPantalla(byte[] buffer2, int punteroPpal) throws IOException {
+        _main.cargarimgChatFrag(R.id.frg_Content);
+        _main.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ImageView imageView = _main.findViewById(R.id.imgchatid2);
+                Bitmap bitmap = BitmapFactory.decodeByteArray(buffer2, 0, punteroPpal);
+                imageView.setImageBitmap(bitmap);
             }
-            punteroPpal=punteroPpal;
+        });
+        if (fuente != null) {
+            fuente.close();
         }
 
-            byte [] buf = buffer2;
-            String s = new String(buf, "UTF-8");
-            Uri uri = Uri.parse(s);
-            _main.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    imageView.setImageURI(uri);
-                }
-            });
+    }
 
-        if (fuente != null) {
-                fuente.close();
-            }
+    public void cargarFragment(Fragment frgseleccionado, int frgDestino){
+        FragmentManager fragmentManager = _main.getFragmentManager();
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        transaction.replace(frgDestino, frgseleccionado);
+        transaction.commit();
+    }
+    public byte getTipoDato() {
+        return tipoDato;
+    }
+
+    public void setTipoDato(byte tipoDato) {
+        this.tipoDato = tipoDato;
     }
 
     private void esperarConexion() throws IOException {
-        Log.i("Servidor","Esperando una conexión\n" );
-//        try {/
+        Log.i("Servidor", "Esperando una conexión\n");
+        try {
             _Client = _Server.accept(); // permitir al servidor aceptar la conexión Y ESPERA
-//        } catch (IOException e) {/
-//            e.printStackTrace();
-//        }
-        Log.i("Servidor","Conexión recibida de: " + _Client.getInetAddress().getHostName() );
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void cerrarConexion() throws IOException {
-//        try{
-//            Log.d("aviso de cierre", "Finalizando la conexión\n");
-//        }catch (Exception e){
-//
-//        }
-        _Client.close();
-
+        try {
+            Log.d("aviso de cierre", "Finalizando la conexión\n");
+            _Client.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
+
     public String getMensajeRecibido() {
         return mensajeRecibido;
     }
@@ -185,10 +203,19 @@ public class Servidor implements Runnable {
 }
 
 
-
-
 // CODIGO DE RECICLAJE
 
+
+//        Log.i("Servidor","Conexión recibida de: " + _Client.getInetAddress().getHostName() );
+//        System.out.println(""+uri.getPath());
+//        Bitmap bitmap = BitmapFactory.decodeFile(uri.getPath()); //decodeByteArray(buffer2, 0, buffer2.length);
+
+//        byte [] buf = buffer2;
+//        String s = new String(buffer2, "UTF-8");
+//        Uri uri = Uri.;
+
+//        InputStream fuente = new BufferedInputStream(new FileInputStream("C:/Users/Enzo/Downloads/fotografo-paisajes.jpg"));
+//        DataOutputStream destino = new DataOutputStream(_Server);
 
 //            while ((charsRead = fuente.read(buffer)) != -1) {
 //                imageView = new String(buffer).substring(0, charsRead);

@@ -1,4 +1,4 @@
-package com.rober.imagesockects;
+package com.rober.DAutosockets;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.view.LayoutInflater;

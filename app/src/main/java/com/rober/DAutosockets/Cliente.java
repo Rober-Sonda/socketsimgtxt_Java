@@ -1,37 +1,23 @@
-package com.rober.imagesockects;
+package com.rober.DAutosockets;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.net.Uri;
-import android.renderscript.Sampler;
 import android.util.Log;
 import android.view.Gravity;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AlertDialog;
 
-import org.w3c.dom.Text;
-
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 
 import java.net.Socket;
-import java.net.URL;
-import java.net.UnknownHostException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static com.rober.DAutosockets.GlobalInfo.IPAddress;
 
 public class Cliente implements Runnable {
     public String IPServidor = GlobalInfo.IPServidor;
@@ -43,7 +29,8 @@ public class Cliente implements Runnable {
     private InputStream url_img;
     private Uri URL_FUENTE_GALLERY;
     private Socket _SocketCliente;
-
+    byte[] buffer2 = new byte[5*1024*1024];
+    int charsRead = 0;
     public Cliente(MainActivity main, String chat)  {
 //        MainActivity main
         _main = main;
@@ -61,59 +48,84 @@ public class Cliente implements Runnable {
     public void run() {
 
         try {
+
             String ipdemiequipo = GlobalInfo.getIP();
             Log.d("Cliente", "Mensaje desde el cliente" + " " + ipdemiequipo + " " + String.valueOf(_PORT));
 
             _SocketCliente = new Socket(IPServidor, _PORT);
 
             if (GlobalInfo.queEnvio == 1) {  // 1:TEXTO
-                out = new DataOutputStream(_SocketCliente.getOutputStream());
+                //manejar los textos con buffers tambien
+                in = new DataInputStream(_SocketCliente.getInputStream());   //Canal de entrada para texto e imagen
                 String message = _Chat;
-                String prueba = out.toString();
-                Log.i("OUT CLIENTE: ", prueba);
+                out = new DataOutputStream(_SocketCliente.getOutputStream());   //Canal de salida para texto e imagen
                 out.writeBytes("Cliente: " + message);
                 out.flush(); //envia mensaje al servidor
+                out.close();
                 cerrarConexion(_SocketCliente);// cierra la conexion con el servidor
-
+                mostrarInfoTxtenPantalla(buffer2, message);
             } else if (GlobalInfo.queEnvio == 2) { // 2:IMAGENES
                 //Envio imagen
-                out = new DataOutputStream(_SocketCliente.getOutputStream());
-                InputStream url_img = _main.getContentResolver().openInputStream(URL_FUENTE_GALLERY);
-
-//                int charsRead = 0;
-//                int i = url_img.read();
-                byte[] buffer = new byte[5*1024*1024];
-                out.writeBytes(url_img.toString());
-                out.flush();
-                cerrarConexion(_SocketCliente);// cierra la conexion con el servidor
-
-                } else {
-                    //Envie un mensaje sin formato  0: NO ESPECIFICADO
-                    AlertDialog.Builder builder = new AlertDialog.Builder(_main);
-                    builder.setMessage("El mensaje del cliente llego null intenta nuevamente");
-                    builder.setNegativeButton("OK", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                        }
-                    });
-                    builder.show();
+                byte[] buffer = new byte[2048];
+                InputStream in = _main.getContentResolver().openInputStream(URL_FUENTE_GALLERY); // Canal de entrada
+                charsRead = 0;
+                out = new DataOutputStream(_SocketCliente.getOutputStream());   //Canal de salida para texto e imagen
+                buffer[0] = 2; // 2:IMAGEN
+                out.write(buffer,0,1);
+                while ((charsRead = in.read(buffer,0,buffer.length)) != -1) {
+                    out.write(buffer,0,charsRead);
                 }
-
-            } catch (IOException ex) {
-                Logger.getLogger(Cliente.class.getName()).log(Level.SEVERE, null, ex);
-                System.out.println(ex.toString());
+                out.flush();
+                in.close();
+                out.close();
+                cerrarConexion(_SocketCliente); // cierra la conexion con el servidor
+            } else {
+                //Envie un mensaje sin formato  0: NO ESPECIFICADO
+                AlertDialog.Builder builder = new AlertDialog.Builder(_main);
+                builder.setMessage("El mensaje del cliente llego null intenta nuevamente");
+                builder.setNegativeButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
+                builder.show();
             }
-        }
 
+        } catch (IOException ex) {
+            Logger.getLogger(Cliente.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println(ex.toString());
+        }
+    }
+    public void mostrarInfoTxtenPantalla(byte[] buffer, String msjCliente) throws IOException {
+        String message = msjCliente;
+        _main.cargartxtChatFrag(R.id.frg_Content);
+        _main.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                TextView TxtMensaje = new TextView(_main);
+                TxtMensaje.setText("Cliente: " + IPAddress + message);
+                TxtMensaje.setTextSize(15);
+                TxtMensaje.setGravity(Gravity.LEFT);
+                LinearLayout chat = _main.findViewById(R.id.chat_id);
+                chat.addView(TxtMensaje);
+                System.out.println("Servidor: " + message);
+            }
+        });
+    }
     public void cerrarConexion(Socket Cliente) throws IOException {
         Log.i("Cliente","Cierro conexion");
-        Cliente.close();
+        try{
+            Cliente.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void setMensaje(String mensaje) {
         this._Chat = mensaje;
     }
+
 
 }
 

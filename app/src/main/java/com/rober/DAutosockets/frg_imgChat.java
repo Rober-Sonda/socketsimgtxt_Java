@@ -1,4 +1,4 @@
-package com.rober.imagesockects;
+package com.rober.DAutosockets;
 
 import android.os.Bundle;
 
@@ -8,21 +8,23 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-public class frg_datos extends Fragment {
+public class frg_imgChat extends Fragment {
 
-    public frg_datos() {
+    public frg_imgChat() {
         // Required empty public constructor
     }
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.frg_datos, container, false);
+        return inflater.inflate(R.layout.frg_imgchat, container, false);
     }
 }

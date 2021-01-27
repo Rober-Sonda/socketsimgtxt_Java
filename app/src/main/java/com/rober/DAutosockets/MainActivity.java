@@ -1,4 +1,4 @@
-package com.rober.imagesockects;
+package com.rober.DAutosockets;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -32,17 +32,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 
-import static com.rober.imagesockects.GlobalInfo.IPAddress;
-import static com.rober.imagesockects.GlobalInfo.IPServidor;
-import static com.rober.imagesockects.GlobalInfo.PORT;
+import static com.rober.DAutosockets.GlobalInfo.IPAddress;
+import static com.rober.DAutosockets.GlobalInfo.PORT;
 
 public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_PERMISSION_CODE = 1777;
@@ -75,31 +69,27 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 // Acción de Servidor
-                dialogtxtImg();
+                GlobalInfo.Rol = 1;
+//                dialogtxtImg();
                 System.out.println(IPAddress);
                 System.out.println(String.valueOf(PORT));
                 titulo = findViewById(R.id.txv_clienteServidor_id);
                 titulo.setText("Servidor escuchando... :" + IPAddress + " " + PORT);
                 //OCULTAR MENU PORQUE EL SERVIDOR NO ENVIA NADA AL CLIENTE
-//                Servidor servidor = new Servidor(IPAddress, PORT);
-//                String msj;
-//                Thread hiloServer = new Thread(servidor); //Servidor a la escucha
-//                hiloServer.start();
-                new Thread(new Runnable() {
-                    String msj = "";
-                    LinearLayout linearLayout = findViewById(R.id.chat_id);
 
+                new Thread(new Runnable() {
+//                    String msj = "";
+//                    LinearLayout linearLayout = findViewById(R.id.chat_id);
                     @Override
                     public void run() {
                         Servidor servidor = new Servidor(IPAddress, PORT, MainActivity.this);
                         servidor.run();
-                        msj = servidor.getMensajeRecibido();
-                        Log.i("Servidor", " " + msj); //Servidor a la escucha
-                        // hilserv.start();
-                        System.out.println("Servidor escuchando... :" + IPAddress + " " + PORT);
+//                        msj = servidor.getMensajeRecibido();
+//                        Log.i("Servidor", " " + msj); //Servidor a la escucha
+//                        // hilserv.start();
+//                        System.out.println("Servidor escuchando... :" + IPAddress + " " + PORT);
                     }
                 }).start();
-//                Log.i("Servidor", " " + msj);
                 System.out.println("Servidor escuchando... :" + IPAddress + " " + PORT);
             }
         });
@@ -107,12 +97,29 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 // Acción de Cliente
+                GlobalInfo.Rol = 2;
                 titulo = findViewById(R.id.txv_clienteServidor_id);
 //                Cliente cliente = new Cliente(); //Cliente se conecta
 //                cliente.run();
                 titulo.setText("Cliente listo... " + IPAddress + " " + PORT);
             }
         });
+    }
+
+    @Override
+    public boolean onPreparePanel(int featureId, @Nullable View view, @NonNull Menu menu) {
+        MenuItem mnmsj = menu.findItem(R.id.mnmsj_id);
+        MenuItem mnimg = menu.findItem(R.id.mnimg_id);
+        if(GlobalInfo.Rol == 1) {
+            mnmsj.setVisible(false);
+            mnimg.setVisible(false);
+        }
+        else {
+            mnmsj.setVisible(true);
+            mnimg.setVisible(true);
+        }
+//        return true;
+        return super.onPreparePanel(featureId, view, menu);
     }
 
     @Override
@@ -195,19 +202,18 @@ public class MainActivity extends AppCompatActivity {
     // /storage/emulated/0/DCIM/Camera/IMG_20210118_184637.jpg
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.mnimg_id) {
-            GlobalInfo.queEnvio = 2; //Bandera para saber que envio una imagen
-            cargarBlankFrag(R.id.frg_Content);
-            cargarimgChatFrag(R.id.frg_Content);
-        } else if (item.getItemId() == R.id.mnmsj_id) {
-            GlobalInfo.queEnvio = 1; //Bandera para saber que envio una imagen
-            cargarBlankFrag(R.id.frg_Content);
-            cargartxtChatFrag(R.id.frg_Content);
-        } else if (item.getItemId() == R.id.mnsalir_id) {
-            dialogSalir();
-        } else {
-            return super.onContextItemSelected(item);
-        }
+//opciones disponibles solo para el cliente excepto la opcion salir
+            if (item.getItemId() == R.id.mnimg_id) {
+                GlobalInfo.queEnvio = 2; //Bandera para saber que envio una imagen
+                cargarimgChatFrag(R.id.frg_Content);
+            } else if (item.getItemId() == R.id.mnmsj_id) {
+                GlobalInfo.queEnvio = 1; //Bandera para saber que envio una imagen
+                cargartxtChatFrag(R.id.frg_Content);
+            } else if (item.getItemId() == R.id.mnsalir_id) {
+                dialogSalir();
+            } else {
+                return super.onContextItemSelected(item);
+            }
         return true;
     }
 
@@ -218,11 +224,6 @@ public class MainActivity extends AppCompatActivity {
 
     void cargartxtChatFrag(int Frag) {
         Fragment fragmentoSeleccionado = new frg_txtChat();
-        cargarfrag(fragmentoSeleccionado, Frag);
-    }
-
-    void cargarBlankFrag(int Frag) {
-        Fragment fragmentoSeleccionado = new BlankFragment();
         cargarfrag(fragmentoSeleccionado, Frag);
     }
 
@@ -261,7 +262,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 GlobalInfo.queEnvio = 1;
-                cargarBlankFrag(R.id.frg_Content);
                 cargartxtChatFrag(R.id.frg_Content);
                 dialog.dismiss();
             }
@@ -269,7 +269,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 GlobalInfo.queEnvio = 2;
-                cargarBlankFrag(R.id.frg_Content);
                 cargarimgChatFrag(R.id.frg_Content);
                 dialog.dismiss();
             }
@@ -320,24 +319,6 @@ public class MainActivity extends AppCompatActivity {
                     }).start();
                 });
                 break;
-//            case R.id.btnGallery:
-//                Marco = findViewById(R.id.imgchatid2);
-//                btnGallery = findViewById(R.id.btnSendTxt);
-//                btnGallery.setOnClickListener(new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View v) {
-//                        // tu acción
-//                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) { //pido los permisos en tiempo de ejecucion
-//                            if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) { //aca sabemos si los permisos estan habilitados o no
-//                                abrirGaleria();
-//                            } else {
-//                                ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_PERMISSION_CODE);
-//                            }
-//                        } else {
-//                            abrirGaleria(); //abrimos la galeria porque damos por sentado que los permisos ya fueron otorgados
-//                        }
-//                    }
-//                });
             default:
                 GlobalInfo.Rol = 2;
                 break;
@@ -379,14 +360,31 @@ public class MainActivity extends AppCompatActivity {
                     e.printStackTrace();
                     Toast.makeText(MainActivity.this, "Dibujar la imagen en el imageview", Toast.LENGTH_SHORT).show();
                 }
-
-
                 //luego de salir y enviar los datos al servidor modifico la vista
-
             }
         });
     }
 }
+
+
+//            case R.id.btnGallery:
+//                Marco = findViewById(R.id.imgchatid2);
+//                btnGallery = findViewById(R.id.btnSendTxt);
+//                btnGallery.setOnClickListener(new View.OnClickListener() {
+//                    @Override
+//                    public void onClick(View v) {
+//                        // tu acción
+//                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) { //pido los permisos en tiempo de ejecucion
+//                            if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) { //aca sabemos si los permisos estan habilitados o no
+//                                abrirGaleria();
+//                            } else {
+//                                ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, REQUEST_PERMISSION_CODE);
+//                            }
+//                        } else {
+//                            abrirGaleria(); //abrimos la galeria porque damos por sentado que los permisos ya fueron otorgados
+//                        }
+//                    }
+//                });
 
                 //if (GlobalInfo.URL_IMAGEN != null) {
                 //Uri URL_FUENTE_GALLERY = GlobalInfo.URL_IMAGEN;
