@@ -1,13 +1,18 @@
 package com.rober.DAutosockets;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.inputmethodservice.ExtractEditText;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.MenuItem;
+import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -129,17 +134,27 @@ public class Servidor implements Runnable {
             fuente.close();
         }
         _main.cargartxtChatFrag(R.id.frg_Content);
+        String messageNuevo = getMensajeRecibido();
+        TextView TxtMensaje = new TextView(_main);
         _main.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                String message = getMensajeRecibido();
-                TextView TxtMensaje = new TextView(_main);
-                TxtMensaje.setText("Servidor: " + _IPAddress + message);
+                ExtractEditText msg = _main.findViewById(R.id.msg_id); //R.id.mnimg_id);
+                TextView TxtIndicadorRol = _main.findViewById(R.id.txtvcliente_id); //R.id.mnimg_id);
+                Button btnEnviarTxt = _main.findViewById(R.id.btnSendTxt); //R.id.mnimg_id);
+                TextView TxtDescripcion = _main.findViewById(R.id.txtv_subtitulo); //R.id.mnimg_id);
+                TxtIndicadorRol.setText("SERVIDOR");
+                TxtDescripcion.setText("RECIBISTE UN TEXTO DESDE EL CLIENTE: " + _Client.getInetAddress());
+                if(GlobalInfo.Rol == 1) {
+                    msg.setVisibility(View.INVISIBLE);
+                    btnEnviarTxt.setVisibility(View.INVISIBLE);
+                }
+
+                TxtMensaje.setText("Servidor: " + _Client.getInetAddress() +" "+ messageNuevo);
                 TxtMensaje.setTextSize(15);
-                TxtMensaje.setGravity(Gravity.RIGHT);
+                TxtMensaje.setGravity(Gravity.LEFT);
                 LinearLayout chat = _main.findViewById(R.id.chat_id);
                 chat.addView(TxtMensaje);
-                System.out.println("Servidor: " + message);
             }
         });
     }
@@ -150,6 +165,15 @@ public class Servidor implements Runnable {
         _main.runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                LinearLayout BtnsImg = _main.findViewById(R.id.linearLButtons); //R.id.mnimg_id);
+                TextView TxtDescripcion = _main.findViewById(R.id.txtv_subtitulo); //R.id.mnimg_id);
+                TxtDescripcion.setText("IMAGEN RECIBIDA DESDE EL CLIENTE: " + _Client.getInetAddress());
+                if(GlobalInfo.Rol == 1) {
+                    BtnsImg.setVisibility(View.INVISIBLE);
+                }
+                else {
+                    BtnsImg.setVisibility(View.VISIBLE);
+                }
                 ImageView imageView = _main.findViewById(R.id.imgchatid2);
                 Bitmap bitmap = BitmapFactory.decodeByteArray(buffer2, 0, punteroPpal);
                 imageView.setImageBitmap(bitmap);

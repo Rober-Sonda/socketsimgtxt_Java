@@ -75,19 +75,11 @@ public class MainActivity extends AppCompatActivity {
                 System.out.println(String.valueOf(PORT));
                 titulo = findViewById(R.id.txv_clienteServidor_id);
                 titulo.setText("Servidor escuchando... :" + IPAddress + " " + PORT);
-                //OCULTAR MENU PORQUE EL SERVIDOR NO ENVIA NADA AL CLIENTE
-
                 new Thread(new Runnable() {
-//                    String msj = "";
-//                    LinearLayout linearLayout = findViewById(R.id.chat_id);
                     @Override
                     public void run() {
                         Servidor servidor = new Servidor(IPAddress, PORT, MainActivity.this);
                         servidor.run();
-//                        msj = servidor.getMensajeRecibido();
-//                        Log.i("Servidor", " " + msj); //Servidor a la escucha
-//                        // hilserv.start();
-//                        System.out.println("Servidor escuchando... :" + IPAddress + " " + PORT);
                     }
                 }).start();
                 System.out.println("Servidor escuchando... :" + IPAddress + " " + PORT);
@@ -99,8 +91,6 @@ public class MainActivity extends AppCompatActivity {
                 // Acción de Cliente
                 GlobalInfo.Rol = 2;
                 titulo = findViewById(R.id.txv_clienteServidor_id);
-//                Cliente cliente = new Cliente(); //Cliente se conecta
-//                cliente.run();
                 titulo.setText("Cliente listo... " + IPAddress + " " + PORT);
             }
         });
@@ -284,39 +274,22 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         EditText editText = findViewById(R.id.msg_id);
-                        //mando lo escrito a la clase
-                        System.out.println(editText.getText().toString());
-                        Cliente cliente = new Cliente(MainActivity.this, editText.getText().toString());
+                        String mensajeCliente = editText.getText().toString();
+                        Cliente cliente = new Cliente(MainActivity.this, mensajeCliente);
                         cliente.run();
-                        //luego de salir y enviar los datos al servidor
-                        //modifico la vista
-
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                String message = editText.getText().toString();
-                                TextView TxtMensaje = new TextView(MainActivity.this);
-                                TxtMensaje.setText(message);
-                                TxtMensaje.setTextSize(15);
-                                TxtMensaje.setGravity(Gravity.RIGHT);
-                                LinearLayout _Chat = findViewById(R.id.chat_id);
-                                _Chat.addView(TxtMensaje);
-                                System.out.println("Cliente: " + message);
-                            }
-                        });
                     }
                 }).start();
                 break;
             case R.id.btnlimpiartxv_id:
                 btnLimpiarChattxv = findViewById(R.id.btnlimpiartxv_id);
                 btnLimpiarChattxv.setOnClickListener(v -> {
-                    new Thread(new Runnable() {
+                    runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             LinearLayout textView = findViewById(R.id.chat_id);
                             textView.removeAllViewsInLayout();
                         }
-                    }).start();
+                    });
                 });
                 break;
             default:

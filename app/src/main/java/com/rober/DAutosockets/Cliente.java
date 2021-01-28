@@ -1,8 +1,11 @@
 package com.rober.DAutosockets;
 import android.content.DialogInterface;
+import android.inputmethodservice.ExtractEditText;
 import android.net.Uri;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.View;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -56,14 +59,18 @@ public class Cliente implements Runnable {
 
             if (GlobalInfo.queEnvio == 1) {  // 1:TEXTO
                 //manejar los textos con buffers tambien
-                in = new DataInputStream(_SocketCliente.getInputStream());   //Canal de entrada para texto e imagen
-                String message = _Chat;
+                byte[] buffer = new byte[2048];
+                charsRead = 0;
                 out = new DataOutputStream(_SocketCliente.getOutputStream());   //Canal de salida para texto e imagen
-                out.writeBytes("Cliente: " + message);
-                out.flush(); //envia mensaje al servidor
+                buffer[0] = 1; // 2:TEXTO
+                out.write(buffer,0,1);
+                String message = _Chat;
+                buffer = message.getBytes();
+                out.write(buffer,0,buffer.length);
+                out.flush(); //se asegura de limpiar el buffer de bytes que hayan quedado
                 out.close();
                 cerrarConexion(_SocketCliente);// cierra la conexion con el servidor
-                mostrarInfoTxtenPantalla(buffer2, message);
+                mostrarInfoTxtenPantalla(buffer, message);
             } else if (GlobalInfo.queEnvio == 2) { // 2:IMAGENES
                 //Envio imagen
                 byte[] buffer = new byte[2048];
@@ -71,9 +78,9 @@ public class Cliente implements Runnable {
                 charsRead = 0;
                 out = new DataOutputStream(_SocketCliente.getOutputStream());   //Canal de salida para texto e imagen
                 buffer[0] = 2; // 2:IMAGEN
-                out.write(buffer,0,1);
+                out.write(buffer,0,1); //envia el primer byte
                 while ((charsRead = in.read(buffer,0,buffer.length)) != -1) {
-                    out.write(buffer,0,charsRead);
+                    out.write(buffer,0,charsRead);  //envia los demas
                 }
                 out.flush();
                 in.close();
@@ -103,13 +110,26 @@ public class Cliente implements Runnable {
         _main.runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                ExtractEditText msg = _main.findViewById(R.id.msg_id); //R.id.mnimg_id);
+                TextView TxtIndicadorRol = _main.findViewById(R.id.txtvcliente_id); //R.id.mnimg_id);
+                Button btnEnviarTxt = _main.findViewById(R.id.btnSendTxt); //R.id.mnimg_id);
+                TextView TxtDescripcion = _main.findViewById(R.id.txtv_subtitulo); //R.id.mnimg_id);
+                TxtIndicadorRol.setText("CLIENTE");
+                TxtDescripcion.setText("ENVIA UN TEXTO");
+                if(GlobalInfo.Rol == 2) {
+                    msg.setVisibility(View.VISIBLE);
+                    btnEnviarTxt.setVisibility(View.VISIBLE);
+                }
+//                else {
+//                    msg.setVisibility(View.INVISIBLE);
+//                    btnEnviarTxt.setVisibility(View.INVISIBLE);
+//                }
                 TextView TxtMensaje = new TextView(_main);
                 TxtMensaje.setText("Cliente: " + IPAddress + message);
                 TxtMensaje.setTextSize(15);
-                TxtMensaje.setGravity(Gravity.LEFT);
+                TxtMensaje.setGravity(Gravity.RIGHT);
                 LinearLayout chat = _main.findViewById(R.id.chat_id);
                 chat.addView(TxtMensaje);
-                System.out.println("Servidor: " + message);
             }
         });
     }

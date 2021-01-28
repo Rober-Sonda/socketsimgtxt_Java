@@ -5,7 +5,7 @@
     <string name="enviarmensajes">Enviar Texto</string>
     <string name="enviarimagenes">Enviar Imágen</string>
     <string name="salir">Salir</string>
-    <string name="BtnLimpiarChat">ENVIAR</string>
+    <string name="BtnLimpiarChat">LIMPIAR</string>
     <string name="Enviar">ENVIAR</string>
 
 </resources>
