@@ -1,4 +1,4 @@
-package com.rober.DAutosockets;
+package com.rober.DAutosocketsUDP;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;

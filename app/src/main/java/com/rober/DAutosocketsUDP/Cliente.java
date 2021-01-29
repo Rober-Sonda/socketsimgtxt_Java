@@ -1,4 +1,4 @@
-package com.rober.DAutosockets;
+package com.rober.DAutosocketsUDP;
 import android.content.DialogInterface;
 import android.inputmethodservice.ExtractEditText;
 import android.net.Uri;
@@ -20,7 +20,7 @@ import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.rober.DAutosockets.GlobalInfo.IPAddress;
+import static com.rober.DAutosocketsUDP.GlobalInfo.IPAddress;
 
 public class Cliente implements Runnable {
     public String IPServidor = GlobalInfo.IPServidor;
@@ -30,7 +30,7 @@ public class Cliente implements Runnable {
     DataOutputStream out;
     DataInputStream in;
     private InputStream url_img;
-    private Uri URL_FUENTE_GALLERY;
+        private Uri Url_Fuente_Gallery;
     private Socket _SocketCliente;
     byte[] buffer2 = new byte[5*1024*1024];
     int charsRead = 0;
@@ -39,13 +39,12 @@ public class Cliente implements Runnable {
         _main = main;
         _Chat = chat;
     }
-    public Cliente(MainActivity main, Uri URL_FUENTE_GALLERY) throws IOException {
+    public Cliente(MainActivity main, Uri Url_Fuente_Gallery) throws IOException {
 
 //        MainActivity main
         _main = main;
-
-        this.URL_FUENTE_GALLERY = URL_FUENTE_GALLERY;
-//        url_img = _main.getContentResolver().openInputStream(URL_FUENTE_GALLERY);
+        this.Url_Fuente_Gallery = Url_Fuente_Gallery;
+//        url_img = _main.getContentResolver().openInputStream(Url_Fuente_Gallery);
     }
     @Override
     public void run() {
@@ -71,10 +70,10 @@ public class Cliente implements Runnable {
                 out.close();
                 cerrarConexion(_SocketCliente);// cierra la conexion con el servidor
                 mostrarInfoTxtenPantalla(buffer, message);
-            } else if (GlobalInfo.queEnvio == 2) { // 2:IMAGENES
+            } else if (GlobalInfo.queEnvio == 2) { // 2:ENVIO TCP DE IMAGENES 
                 //Envio imagen
                 byte[] buffer = new byte[2048];
-                InputStream in = _main.getContentResolver().openInputStream(URL_FUENTE_GALLERY); // Canal de entrada
+                InputStream in = _main.getContentResolver().openInputStream(Url_Fuente_Gallery); // Canal de entrada
                 charsRead = 0;
                 out = new DataOutputStream(_SocketCliente.getOutputStream());   //Canal de salida para texto e imagen
                 buffer[0] = 2; // 2:IMAGEN

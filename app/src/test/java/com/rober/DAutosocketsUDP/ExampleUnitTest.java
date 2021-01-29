@@ -1,4 +1,4 @@
-package com.rober.DAutosockets;
+package com.rober.DAutosocketsUDP;
 
 import org.junit.Test;
 

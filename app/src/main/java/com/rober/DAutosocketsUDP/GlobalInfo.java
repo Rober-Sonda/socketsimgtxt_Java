@@ -1,12 +1,12 @@
-package com.rober.DAutosockets;
+package com.rober.DAutosocketsUDP;
 
-import android.app.role.RoleManager;
 import android.net.Uri;
 import android.util.Log;
 
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
+import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
@@ -17,6 +17,15 @@ public class GlobalInfo {
         public static byte Rol = 1; // 0:Cancelado | 1:Servidor | 2:Cliente
         public static final int PORT = 9091;
         public static final String IPServidor = "192.168.88.42";
+        public static InetAddress IPServer = null;
+        static {
+                try {
+                        IPServer = InetAddress.getByName(IPServidor);
+                } catch (UnknownHostException e) {
+                        e.printStackTrace();
+                }
+        }
+
         public static Uri URL_IMAGEN = null;
         public static final String IPAddress = getIP();
         public static byte queEnvio = 0; // 1:Texto | 2:Imagen

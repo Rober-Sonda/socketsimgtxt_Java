@@ -1,4 +1,4 @@
-package com.rober.DAutosockets;
+package com.rober.DAutosocketsUDP;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

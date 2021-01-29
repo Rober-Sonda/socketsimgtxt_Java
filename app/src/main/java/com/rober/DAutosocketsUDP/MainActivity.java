@@ -1,4 +1,4 @@
-package com.rober.DAutosockets;
+package com.rober.DAutosocketsUDP;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -14,7 +14,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -33,10 +32,11 @@ import androidx.core.app.ActivityCompat;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.net.SocketException;
 import java.text.SimpleDateFormat;
 
-import static com.rober.DAutosockets.GlobalInfo.IPAddress;
-import static com.rober.DAutosockets.GlobalInfo.PORT;
+import static com.rober.DAutosocketsUDP.GlobalInfo.IPAddress;
+import static com.rober.DAutosocketsUDP.GlobalInfo.PORT;
 
 public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_PERMISSION_CODE = 1777;
@@ -74,15 +74,20 @@ public class MainActivity extends AppCompatActivity {
                 System.out.println(IPAddress);
                 System.out.println(String.valueOf(PORT));
                 titulo = findViewById(R.id.txv_clienteServidor_id);
-                titulo.setText("Servidor escuchando... :" + IPAddress + " " + PORT);
+                titulo.setText("Servidor UDP escuchando... :" + IPAddress);
                 new Thread(new Runnable() {
                     @Override
                     public void run() {
-                        Servidor servidor = new Servidor(IPAddress, PORT, MainActivity.this);
+                        ServidorUDP servidor = null;
+                        try {
+                            servidor = new ServidorUDP(PORT, MainActivity.this);
+                        } catch (SocketException e) {
+                            e.printStackTrace();
+                        }
                         servidor.run();
                     }
                 }).start();
-                System.out.println("Servidor escuchando... :" + IPAddress + " " + PORT);
+                System.out.println("Servidor..: " + IPAddress);
             }
         });
         btnCliente.setOnClickListener(new View.OnClickListener() {
@@ -91,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
                 // Acción de Cliente
                 GlobalInfo.Rol = 2;
                 titulo = findViewById(R.id.txv_clienteServidor_id);
-                titulo.setText("Cliente listo... " + IPAddress + " " + PORT);
+                titulo.setText("Cliente ... " + IPAddress + " " + PORT);
             }
         });
     }
@@ -275,7 +280,7 @@ public class MainActivity extends AppCompatActivity {
                     public void run() {
                         EditText editText = findViewById(R.id.msg_id);
                         String mensajeCliente = editText.getText().toString();
-                        Cliente cliente = new Cliente(MainActivity.this, mensajeCliente);
+                        ClienteUDP cliente = new ClienteUDP(MainActivity.this, mensajeCliente);
                         cliente.run();
                     }
                 }).start();

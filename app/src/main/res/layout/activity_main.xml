@@ -102,6 +102,7 @@
             android:background="@color/white"
             android:gravity="center"
             android:textSize="20sp" />
+
         <TextView
             android:id="@+id/txv_clienteServidor_id"
             android:layout_width="0dp"
@@ -112,10 +113,10 @@
             android:text="@string/hello_blank_fragment"
             android:textSize="20sp" />
     </LinearLayout>
+
     <FrameLayout
         android:id="@+id/frg_Content"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@color/white">
-    </FrameLayout>
+        android:background="@color/white"></FrameLayout>
 </LinearLayout>

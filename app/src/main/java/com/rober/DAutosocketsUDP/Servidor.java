@@ -1,6 +1,4 @@
-package com.rober.DAutosockets;
-
-import android.app.Activity;
+package com.rober.DAutosocketsUDP;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
@@ -10,7 +8,6 @@ import android.graphics.BitmapFactory;
 import android.inputmethodservice.ExtractEditText;
 import android.util.Log;
 import android.view.Gravity;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;

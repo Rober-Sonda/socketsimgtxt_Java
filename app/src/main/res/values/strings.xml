@@ -1,5 +1,5 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <string name="app_name">Detección automática</string>
+    <string name="app_name">Sockets UDP</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Blank fragment</string>
     <string name="enviarmensajes">Enviar Texto</string>
