@@ -47,16 +47,17 @@
         app:layout_constraintHorizontal_bias="0.2"
         app:layout_constraintStart_toStartOf="parent"
         tools:ignore="MissingConstraints">
+
         <Button
             android:id="@+id/btnGallery"
             android:layout_width="wrap_content"
             android:layout_height="44dp"
-            android:gravity="center"
             android:layout_margin="5dp"
-            android:textSize="12dp"
             android:backgroundTint="#005098"
-            android:text="SELECCIONAR IMAGEN"
+            android:gravity="center"
             android:onClick="ClickBtnGaleria"
+            android:text="SELECCIONAR IMAGEN"
+            android:textSize="12sp"
             tools:ignore="OnClick" />
 
         <Button

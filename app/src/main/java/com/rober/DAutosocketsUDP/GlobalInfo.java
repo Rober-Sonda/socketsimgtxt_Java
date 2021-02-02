@@ -16,7 +16,7 @@ import java.util.Locale;
 public class GlobalInfo {
         public static byte Rol = 1; // 0:Cancelado | 1:Servidor | 2:Cliente
         public static final int PORT = 9091;
-        public static final String IPServidor = "192.168.88.42";
+        public static final String IPServidor = "192.168.88.64";
         public static InetAddress IPServer = null;
         static {
                 try {

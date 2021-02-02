@@ -182,20 +182,6 @@ public class Servidor implements Runnable {
 
     }
 
-    public void cargarFragment(Fragment frgseleccionado, int frgDestino){
-        FragmentManager fragmentManager = _main.getFragmentManager();
-        FragmentTransaction transaction = fragmentManager.beginTransaction();
-        transaction.replace(frgDestino, frgseleccionado);
-        transaction.commit();
-    }
-    public byte getTipoDato() {
-        return tipoDato;
-    }
-
-    public void setTipoDato(byte tipoDato) {
-        this.tipoDato = tipoDato;
-    }
-
     private void esperarConexion() throws IOException {
         Log.i("Servidor", "Esperando una conexión\n");
         try {

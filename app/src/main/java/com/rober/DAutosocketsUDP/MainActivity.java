@@ -306,10 +306,10 @@ public class MainActivity extends AppCompatActivity {
 
     public void ClickBtnGaleria(View view) {
         Marco = findViewById(R.id.imgchatid2);
-        btnGallery = findViewById(R.id.btnGallery);
-        btnGallery.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+//        btnGallery = findViewById(R.id.btnGallery);
+//        btnGallery.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
                 // tu acción
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) { //pido los permisos en tiempo de ejecucion
                     if (ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) { //aca sabemos si los permisos estan habilitados o no
@@ -320,8 +320,8 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     abrirGaleria(); //abrimos la galeria porque damos por sentado que los permisos ya fueron otorgados
                 }
-            }
-        });
+//            }
+//        });
     }
 
     public void EnviarImagen(View view) throws IOException {
@@ -331,12 +331,12 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 ImageView imageView = findViewById(R.id.imageView2);
                 //mando lo escrito a la clase
-                Cliente cliente = null;
+//                Cliente cliente = null;
                 try {
-                    new Thread(new Cliente(MainActivity.this, GlobalInfo.URL_IMAGEN)).start();
+                    new Thread(new ClienteUDP(MainActivity.this, GlobalInfo.URL_IMAGEN)).start();
                 } catch (IOException e) {
                     e.printStackTrace();
-                    Toast.makeText(MainActivity.this, "Dibujar la imagen en el imageview", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(MainActivity.this, "Hubo un errorw", Toast.LENGTH_SHORT).show();
                 }
                 //luego de salir y enviar los datos al servidor modifico la vista
             }

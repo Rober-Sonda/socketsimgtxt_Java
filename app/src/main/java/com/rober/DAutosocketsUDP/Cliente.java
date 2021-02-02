@@ -30,7 +30,7 @@ public class Cliente implements Runnable {
     DataOutputStream out;
     DataInputStream in;
     private InputStream url_img;
-        private Uri Url_Fuente_Gallery;
+    private Uri Url_Fuente_Gallery;
     private Socket _SocketCliente;
     byte[] buffer2 = new byte[5*1024*1024];
     int charsRead = 0;
@@ -70,7 +70,7 @@ public class Cliente implements Runnable {
                 out.close();
                 cerrarConexion(_SocketCliente);// cierra la conexion con el servidor
                 mostrarInfoTxtenPantalla(buffer, message);
-            } else if (GlobalInfo.queEnvio == 2) { // 2:ENVIO TCP DE IMAGENES 
+            } else if (GlobalInfo.queEnvio == 2) { // 2:ENVIO TCP DE IMAGENES
                 //Envio imagen
                 byte[] buffer = new byte[2048];
                 InputStream in = _main.getContentResolver().openInputStream(Url_Fuente_Gallery); // Canal de entrada
