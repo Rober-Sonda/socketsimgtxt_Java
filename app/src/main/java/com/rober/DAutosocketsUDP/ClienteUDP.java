@@ -15,6 +15,7 @@ import java.io.InputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
+import java.nio.Buffer;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ClienteUDP implements Runnable{
@@ -42,7 +43,7 @@ public class ClienteUDP implements Runnable{
 
             SocketUDP = new DatagramSocket();
 
-            if (GlobalInfo.queEnvio == 1) { //indicador global
+            if (GlobalInfo.queEnvio == 1) { //indicador global 1: TEXTO 2: IMAGEN
                 byte[] buffer = new byte[1500];
                 byte[] buffer2 = new byte[1500];
                 int i = 0;
@@ -61,50 +62,61 @@ public class ClienteUDP implements Runnable{
                                                 buffer.length,
                                                 GlobalInfo.IPServer,
                                                 GlobalInfo.PORT);
-
                 SocketUDP.send(peticion);                                                           //enviamos el datagrama al servidor
             } else if (GlobalInfo.queEnvio == 2) {   //ENVIO UDP DE IMAGENES
                 //Si lo que envio es una imagen vuelco los binarios en un buffer
                 String send_image = "";
                 DatagramPacket peticion = null;
-                int CortePaquete = 1024, BloqueCortePaquete = 1024, PTR = 0 ;
+                int BloqueCortePaquete = 1024, PTR = 0 ;
                 int charsRead = 0, tamañoBuffer = 0, n = 0, i = 0 ;
                 byte[] bufferImg = new byte[10 * 1024 * 1024];
                 byte[] buffer2 = new byte[2048];
                 byte[] buffer;
                 InputStream in = null;
                 if (Url_Fuente_Gallery!=null) { //SOLO INGRESA SI HAY UNA IMAGEN
+
                     in = _main.getContentResolver().openInputStream(Url_Fuente_Gallery);
+
                     while ((charsRead = in.read(bufferImg, tamañoBuffer, bufferImg.length - tamañoBuffer)) != -1) {
                         //tengo el tamaño del buffer cargado
                         tamañoBuffer += charsRead;
                     }
+
                 }else{
                     finalize();
                 }
 
 
                 while (PTR < tamañoBuffer) {
+
                     send_image = String.format("IMAGE PTR=%d SIZE=%d\0", PTR, tamañoBuffer);
+
                     buffer = send_image.getBytes(); //encabezado
-                    Log.i("ENVIADOS", new String(buffer));
+
+                    //copio el encabezado al buffer2
                     System.arraycopy(buffer, 0, buffer2, 0, buffer.length);//agregar encabezado
+
                     int arraylength = buffer.length;
-//                    PTR += arraylength;
-                    //aca hago el corrimiento para copiar la imagen
+
+                    //aca hago el corrimiento para copiar la imagen en caso de que sea la ultima trama
                     if((PTR + BloqueCortePaquete) > tamañoBuffer){
                         BloqueCortePaquete = tamañoBuffer - PTR;
                         //CARGO ENCABEZADO
                     }
-                    System.arraycopy(bufferImg, PTR, buffer2, arraylength, BloqueCortePaquete-1);
-                    Log.i("bufenviado", "bufenviado " + buffer2[buffer.length+1]);
+                    System.arraycopy(bufferImg, PTR, buffer2, arraylength, BloqueCortePaquete);
+                    //largo del datagrama           arrayLength es el largo del encabezado
+                    int DatagLength = arraylength + BloqueCortePaquete;
+                    Log.i("ENVIADOS", new String(buffer));
+                    Log.i("buffer2", "bufenviado  --> " + buffer2[arraylength]); // +1 para ver el primer byte despues del 0
+                    Log.i("bufferImg", "bufferImg --> " + bufferImg[PTR]);
                     //BloqueCortePaquete es la cantidad de bytes que cargo en buffer2
-                    peticion = new DatagramPacket(buffer2,//preparo el paquete para enviar al servidor
-                                                  0,
-                                                  BloqueCortePaquete -1,
-                                                  GlobalInfo.IPServer,
-                                                  GlobalInfo.PORT);
+                    peticion = new DatagramPacket(  buffer2,//preparo el paquete para enviar al servidor
+                                             0,
+                                                    DatagLength,
+                                                    GlobalInfo.IPServer,
+                                                    GlobalInfo.PORT);
                     SocketUDP.send(peticion);
+                    //DatagLength es el encabezado y el cuerpo del mensaje
                     PTR+=BloqueCortePaquete;
                 }
 

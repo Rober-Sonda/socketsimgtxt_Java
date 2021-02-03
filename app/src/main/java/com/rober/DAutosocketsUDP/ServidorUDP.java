@@ -13,6 +13,10 @@ import android.widget.TextView;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.InvalidObjectException;
 import java.util.regex.*;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -33,6 +37,7 @@ public class ServidorUDP implements Runnable{
     private MainActivity _main;
     private int _PORT;
     private String _Texto;
+    private InetAddress IpAddressCliente=null;
 
     private Uri Url_Fuente_Gallery;
     public ServidorUDP(int PORT, MainActivity main) throws SocketException {
@@ -49,52 +54,55 @@ public class ServidorUDP implements Runnable{
             //} while (indicador == 0);
 
             int i = 0, j = 0;
+            byte[] bufferImgRec = new byte[5*1024*1024];
             while(true){
                 try{
-                    byte[] buffer = new byte[1024];
+                    byte[] buffer = new byte[1500];
                     DatagramPacket Datos = new DatagramPacket(buffer,buffer.length);
                     // Recibo y leo una petición del DatagramSocket Cliente
+
                     ServerSocketUDP.receive(Datos);
-                    byte[] bufferImgRec = new byte[5*1024*1024];
-                    byte[] buffer2;
+                    IpAddressCliente = Datos.getAddress();
+                    byte[] buffer2 = new byte[Datos.getLength()];
+
                     buffer2 = Datos.getData();
 
                     if (buffer2[0] == 1){
                         System.out.println("Es texto");
                         mostrarInfoTxtenPantalla(Datos.getData(), Datos.getLength());
-                    }else{
-                        System.out.println("Es Imagen");
+                    }else{//Es imagen
+
                         String encabezado= "";
+
                         while (buffer2[i]!=0 && i < buffer2.length){
                             encabezado += (char)(buffer2[i]);
                             i++;
                         }
-                        i++;
+
+                        i++; //corro el puntero un lugar mas para pasar el cero \0
+                        j+=i;
+
                         int valorPTR = encontrarTexto(encabezado,"PTR=");
                         int valorSIZE = encontrarTexto(encabezado, "SIZE=");
-                        int lengthArray = Datos.getLength();
-                        System.arraycopy(buffer2, i, bufferImgRec, valorPTR, lengthArray - i);
 
-                        Log.i("buf", "bufrecibido " + bufferImgRec[valorPTR]);
-                        Log.i("buf", "bufrecibido buffer2 " + buffer2[i]);
+                        if(valorPTR!=0) {
+//                            valorPTR -= i;
+                        }
+
+                        System.arraycopy(buffer2, i, bufferImgRec, valorPTR, buffer2.length - i);
+
+                        Log.i("RECIBIDOS", encabezado);
+                        Log.i("bufrecibidoimg", "bufrecibido bufferImgRec --> " + bufferImgRec[valorPTR]);
+                        Log.i("bufrecibido", "bufrecibido buffer2 ----------> " + buffer2[i]);
 
                         //byte[] byteEncabezado;
                         //byteEncabezado = encabezado.getBytes();
-                        Log.i("RECIBIDOS", encabezado);
-                        i=0;
-                        if(valorPTR+1024>valorSIZE) {
+                        if(valorPTR + Datos.getLength() >= valorSIZE) {
+                            System.arraycopy(buffer2, i, bufferImgRec, valorPTR, Datos.getLength() - i);
                             mostrarInfoImgenPantalla(bufferImgRec,valorSIZE);
                         }
+                        i=0;
                     }
-
-                    System.out.print("Datagrama recibido desde el host: " + Datos.getAddress()+":" + Datos.getPort());
-//                  creo el datagrama de tipo DatagramPacket para enviar la respuesta
-//                  DatagramPacket respuesta =  new DatagramPacket (Datos.getData(),
-//                                                                    Datos.getLength(),
-//                                                                    Datos.getAddress(),
-//                                                                    Datos.getPort());
-//                    ServerSocketUDP.send(respuesta); //en caso de querer reenviar al cliente una respuesta
-                    //la respuesta enviada es un eco
                 }catch (SocketException  e){
                     System.out.println("Socket: " + e.getMessage());
                 }
@@ -104,7 +112,7 @@ public class ServidorUDP implements Runnable{
             System.out.println("IO: " + e.getMessage());
         }
     }
-    //        int valorSIZE = 0;
+//        int valorSIZE = 0;
 //        char[] ArrayCaracteres = cadena.toCharArray();
 //        for(valor : ArrayCaracteres) {
 //
@@ -114,7 +122,7 @@ public class ServidorUDP implements Runnable{
         int pos = 0;
         Pattern regex = Pattern.compile("\\b" + Pattern.quote(palabra) + "\\b", Pattern.CASE_INSENSITIVE);
         Matcher match = regex.matcher(Texto);
-        if (match.find()) {  //si se quiere encontrar todas las ocurrencias: cambiar el if por while
+        if (match.find()) {  //si se quiere encontrar repeticiones cambiar el if por while
             pos = match.end();
         }
         pos=valorCadena(Texto, pos);
@@ -125,10 +133,10 @@ public class ServidorUDP implements Runnable{
         int valor = 0;
         String strValor="";
         char[] ArrayCaracteres = cadena.toCharArray();
-        while(posInicialValor <= ArrayCaracteres.length - 1){
-            if(ArrayCaracteres[posInicialValor] != ' '){
+        while(posInicialValor <= ArrayCaracteres.length - 1){   //mientras no se termine sigo
+            if(ArrayCaracteres[posInicialValor] != ' '){        //si no es espacio copio el valor y avanzo
                 strValor+=ArrayCaracteres[posInicialValor];
-                posInicialValor++;
+                posInicialValor++;                      //copio y avanzo
             }else{
                 break;
             }
@@ -157,7 +165,8 @@ public class ServidorUDP implements Runnable{
                 Button btnEnviarTxt = _main.findViewById(R.id.btnSendTxt); //R.id.mnimg_id);
                 TextView TxtDescripcion = _main.findViewById(R.id.txtv_subtitulo); //R.id.mnimg_id);
                 TxtIndicadorRol.setText("SERVIDOR");
-                TxtDescripcion.setText("RECIBISTE UN TEXTO DESDE EL CLIENTE: " + ServerSocketUDP.getInetAddress());
+                String IP = String.valueOf(ServerSocketUDP.getInetAddress());
+                TxtDescripcion.setText("RECIBISTE UN TEXTO DESDE EL CLIENTE: " + IP);
                 if(GlobalInfo.Rol == 1) {
                     msg.setVisibility(View.INVISIBLE);
                     btnEnviarTxt.setVisibility(View.INVISIBLE);
@@ -187,7 +196,8 @@ public class ServidorUDP implements Runnable{
             public void run() {
                 LinearLayout BtnsImg = _main.findViewById(R.id.linearLButtons); //R.id.mnimg_id);
                 TextView TxtDescripcion = _main.findViewById(R.id.txtv_subtitulo); //R.id.mnimg_id);
-                TxtDescripcion.setText("IMAGEN RECIBIDA DESDE EL CLIENTE: " + ServerSocketUDP.getInetAddress());
+                String IP = String.valueOf(IpAddressCliente);
+                TxtDescripcion.setText("IMAGEN RECIBIDA DESDE EL CLIENTE: " + IP);
                 if (GlobalInfo.Rol == 1) {
                     BtnsImg.setVisibility(View.INVISIBLE);
                 } else {
@@ -195,7 +205,11 @@ public class ServidorUDP implements Runnable{
                 }
                 ImageView imageView = _main.findViewById(R.id.imgchatid2);
                 Bitmap bitmap = BitmapFactory.decodeByteArray(buffer2, 0, punteroPpal);
-                imageView.setImageBitmap(bitmap);
+                try{
+                    imageView.setImageBitmap(bitmap);
+                }catch (Exception e){
+                    e.getMessage();
+                }
             }
         });
     }
